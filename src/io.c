@@ -165,7 +165,9 @@ void IO_JumpBootloader(void) {
 		IOCLR0 = (1 << 7) | (1 << 14);
 #endif
 #else // no secondary heater
+		IODIR0 = (1 << 8) | (1 << 9);
 #ifdef USE_FET_DRIVER
+		
 		IOCLR0 = (1 << 8) | (1 << 9) | (1 << 14);
 #else
 		IOSET0 = (1 << 8) | (1 << 9);
