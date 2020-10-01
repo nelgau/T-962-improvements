@@ -108,7 +108,7 @@ lpc21isp: $(BUILD_DIR)tag
 flash: axf lpc21isp
 	@echo ''
 	@echo 'Flashing $(COLOR_GREEN)$(BASE_NAME).hex$(COLOR_END) to $(COLOR_RED)$(FLASH_TTY)$(COLOR_END)'
-	$(FLASH_TOOL) "$(BUILD_DIR)$(BASE_NAME).hex" $(FLASH_TTY) $(FLASH_BAUD) $(MCU_CLOCK)
+	$(FLASH_TOOL) -control -verify "$(BUILD_DIR)$(BASE_NAME).hex" $(FLASH_TTY) $(FLASH_BAUD) $(MCU_CLOCK)
 
 .PHONY: clean dependents
 .SECONDARY: post-build
