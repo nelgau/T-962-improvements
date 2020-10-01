@@ -164,7 +164,7 @@ int main(void) {
 	Sched_SetWorkfunc(SHELL_WORK, Shell_Work);
 	Sched_SetState(SHELL_WORK, 1, TICKS_SECS(2)); // Enable in 2 seconds
 
-	Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100));
+	Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(10));
 
 	while (1) {
 #ifdef ENABLE_SLEEP
