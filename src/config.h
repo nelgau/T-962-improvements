@@ -24,14 +24,14 @@
  * by the cold junction compensation patch, but this can be
  * moved to P0.5 (pin 29), which is moved by this define!
  */
-#define USE_SECONDARY_HEATER
+// #define USE_SECONDARY_HEATER
 
 /*
  * if the 74hc04 is replaced by 2 FETs to make sure the Opto-TRIAC
  * receives the correct amount of drive current, the drive logic is
  * inverted, i.e. high means TRIAC on. This changes the logic in io.c
  */
-#define USE_FET_DRIVER
+// #define USE_FET_DRIVER 
 
 /*
  * use this to adjust gain and omit offset compensation settings
@@ -40,7 +40,7 @@
  * at a rather precise gain of 222.2 on the TC input!
  * The feedback resistors are 220k + 1.2k and 1.0k with 0.1% tolerance
  */
-#define USE_PRECISION_OPAMP
+// #define USE_PRECISION_OPAMP
 
 /*
  * The software deals with up-to 4 temperatures, configure their
