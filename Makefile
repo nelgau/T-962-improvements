@@ -29,7 +29,7 @@ COLOR_RED = $(shell echo "\033[0;31m")
 COLOR_END = $(shell echo "\033[0m")
 
 # Source files
-C_SRCS += $(wildcard $(SRC_DIR)*.c) $(BUILD_DIR)version.c
+C_SRCS += $(wildcard $(SRC_DIR)*.c)
 CLI_SRCS := $(wildcard $(CLI_DIR)*.c)
 
 S_SRCS += $(wildcard $(SRC_DIR)*.s)
