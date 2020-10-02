@@ -53,12 +53,12 @@
  *  work. On the other hand if the internal TC were not connected, this
  *  led to an error even in the original version.
  */
-#define TC_LEFT_IF		TC_INTERNAL, 0
-#define TC_RIGHT_IF		TC_INTERNAL, 1
-#define TC_EXTRA1_IF	TC_NONE
-#define TC_EXTRA2_IF	TC_NONE
+#define TC_LEFT_IF		TC_ONE_WIRE, 0
+#define TC_RIGHT_IF		TC_ONE_WIRE, 1
+#define TC_EXTRA1_IF	TC_ONE_WIRE, 2
+#define TC_EXTRA2_IF	TC_ONE_WIRE, 3
 // the CJ compensation sensor, internal means the DS18B20 (or alike), no channel!
-#define COLD_JUNCTION_IF	TC_INTERNAL
+#define COLD_JUNCTION_IF	TC_ONE_WIRE
 
 /*
  * Define the control strategy:
@@ -78,7 +78,7 @@
  *     This is ONLY useful if the TCs are patched to carry such loads, i.e.
  *     a 5c Euro coin on the right thermo-couple and 0.2mm copper foil on the left.
  */
-#define CONTROL_TEMPERATURE		LR_WEIGHTED_AVERAGE
+#define CONTROL_TEMPERATURE		LR_AVERAGE
 
 /*
  * Fully dump the content of the eeprom at startup, mainly for debugging
