@@ -119,7 +119,8 @@ static inline float get_T(TempSensor_t sensor)
 	uint8_t _if = TC_if[sensor][0];
 	uint8_t ch = TC_if[sensor][1];
 
-	return accessors[_if].T(ch) + accessors[_if].CJT(ch);
+	// This should return the temperature as determined by the sensor interface.
+	return accessors[_if].T(ch); // + accessors[_if].CJT(ch);
 }
 
 // removed if not used anyway
