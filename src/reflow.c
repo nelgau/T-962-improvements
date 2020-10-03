@@ -60,7 +60,7 @@ static PidType PID;
 static ReflowState_t reflow_state = REFLOW_STANDBY;
 
 // default to no logging at all, needs serial communication (i.e. shell) anyway
-static int reflow_log_level = LOG_NONE;
+static int reflow_log_level = LOG_INFO;
 static ReflowInformation_t reflow_info;
 static uint32_t loops_since_activation = 0;
 
