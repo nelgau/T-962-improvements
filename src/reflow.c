@@ -330,7 +330,8 @@ static int32_t Reflow_Work(void)
 	case REFLOW_BAKE:
 		if (reflow_info.time_to_go < reflow_info.time_done) {
 			log(LOG_INFO, "Bake done");
-			Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
+			// Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
+			Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(10));
 			reflow_state = REFLOW_COOLING;
 		}
 		control_heater_fan(reflow_info.setpoint, false);
@@ -342,7 +343,8 @@ static int32_t Reflow_Work(void)
 		log_reflow(false, cool_down);
 
 		if (reflow_info.temperature < (float) STANDBYTEMP) {
-			Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
+			// Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
+			Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(10));
 			set_heater_fan(all_off);
 			reflow_info.time_to_go = 0;
 			reflow_state = REFLOW_STANDBY;

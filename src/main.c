@@ -587,7 +587,8 @@ static MainMode_t Cooling_Mode(MainMode_t mode) {
 
 	// beep on any key press, this is still cooling!
 	if (key.keymask != 0) {
-		Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
+		// Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
+		Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(10));
 	}
 
 	if (Reflow_IsStandby()) {
