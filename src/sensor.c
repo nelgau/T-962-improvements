@@ -35,10 +35,6 @@ static uint32_t tweak_time;
 #define TC_ONE_WIRE		2
 #define TC_SPI_BRIDGE	3
 
-#define LR_AVERAGE			0
-#define MAX_TEMP_OVERRIDE	1
-#define LR_WEIGHTED_AVERAGE	2
-
 #ifndef CONTROL_TEMPERATURE
 #define CONTROL_TEMPERATURE LR_AVERAGE
 #endif

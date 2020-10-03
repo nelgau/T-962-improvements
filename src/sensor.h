@@ -1,6 +1,10 @@
 #ifndef SENSORS_H_
 #define SENSORS_H_
 
+#define LR_AVERAGE			0
+#define MAX_TEMP_OVERRIDE	1
+#define LR_WEIGHTED_AVERAGE	2
+
 typedef enum {
 	TC_LEFT,
 	TC_RIGHT,
