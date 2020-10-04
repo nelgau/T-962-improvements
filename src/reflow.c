@@ -53,8 +53,9 @@
 #include "reflow.h"
 #include "buzzer.h"
 
-#define STANDBYTEMP		45		// standby temperature in degree Celsius
+#define STANDBYTEMP		60		// standby temperature in degree Celsius
 #define PID_CYCLE_MS	250		// PID cycle is 250ms
+#define PREHEAT_TIME  	120		// 2 * 60s
 
 static PidType PID;
 static ReflowState_t reflow_state = REFLOW_STANDBY;
@@ -107,7 +108,7 @@ int Reflow_ActivateReflow(void)
 
 	loops_since_activation = 0;
 	logx(LOG_INFO, "Reflow started");
-	reflow_state = REFLOW_REFLOW;
+	reflow_state = REFLOW_REFLOW_WARMUP;
 	reflow_info.time_to_go = 0;
 	return 0;
 }
@@ -119,6 +120,8 @@ int Reflow_ActivateReflow(void)
 void Reflow_Abort(void)
 {
 	switch (reflow_state) {
+	case REFLOW_REFLOW_WARMUP:
+	case REFLOW_REFLOW_PREHEAT:
 	case REFLOW_REFLOW:
 	case REFLOW_BAKE_PREHEAT:
 	case REFLOW_BAKE:
@@ -132,8 +135,10 @@ void Reflow_Abort(void)
 
 static const char *mode_string[] = {
 	[REFLOW_STANDBY] = "STANDBY",
+	[REFLOW_REFLOW_WARMUP] = "REFLOW_WARMUP",
+	[REFLOW_REFLOW_PREHEAT] = "REFLOW_PREHEAT",
 	[REFLOW_REFLOW] = "REFLOW",
-	[REFLOW_BAKE_PREHEAT] = "PREHEAT",
+	[REFLOW_BAKE_PREHEAT] = "BAKE_PREHEAT",
 	[REFLOW_BAKE] = "BAKE",
 	[REFLOW_COOLING] = "COOLING"
 };
@@ -298,6 +303,36 @@ static int32_t Reflow_Work(void)
 	case REFLOW_STANDBY:
 		log_reflow(false, all_off);
 		break;
+
+	case REFLOW_REFLOW_WARMUP:
+		// Warm to the initial temperature of the profile
+		reflow_info.setpoint = Reflow_GetSetpointAtTime(0);
+
+		if (reflow_info.setpoint < reflow_info.temperature) {
+			logx(LOG_INFO, "Warmup done");
+
+			reflow_info.time_to_go = PREHEAT_TIME;
+			loops_since_activation = 0;
+			reflow_state = REFLOW_REFLOW_PREHEAT;
+		}
+		reflow_info.time_done = 0;
+		control_heater_fan(reflow_info.setpoint, false);
+		break;
+
+	case REFLOW_REFLOW_PREHEAT:
+		// Maintain the initial temperature
+		reflow_info.setpoint = Reflow_GetSetpointAtTime(0);
+
+		if (reflow_info.time_to_go < reflow_info.time_done) {
+			logx(LOG_INFO, "Preheat done");
+			reflow_info.time_to_go = 0;
+			reflow_info.time_done = 0;
+			loops_since_activation = 0;
+			reflow_state = REFLOW_REFLOW;
+		}
+		control_heater_fan(reflow_info.setpoint, false);
+		break;
+
 	case REFLOW_REFLOW:
 		// get setpoint from profile and look-ahead value
 		value = Reflow_GetSetpointAtTime(seconds_since_start());
