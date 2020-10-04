@@ -1,6 +1,7 @@
 #include "LPC214x.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "t962.h"
 #include "lcd.h"
@@ -152,17 +153,17 @@ void Reflow_SetSetpointAtIdx(uint8_t idx, uint16_t value) {
  * Note: this returns interpolated values, if the end is reached, the last value
  *   is not interpolated!
  */
-uint16_t Reflow_GetSetpointAtTime(uint32_t time)
+float Reflow_GetSetpointAtTime(float time)
 {
 	// the profile holds temperatures for every 10s
 	uint8_t index = (uint8_t) (time / 10);	// up to 2550s ~ 42min
-	uint8_t rest = (uint8_t) (time % 10);	// 0 .. 9
+	float rest = fmodf(time, 10.0);			// 0 .. 9
 
 	// safe for large indices!
-	int value1 = (int) Reflow_GetSetpointAtIdx(index);
-	int value2 = (int) Reflow_GetSetpointAtIdx(index + 1);
+	float value1 = (float) Reflow_GetSetpointAtIdx(index);
+	float value2 = (float) Reflow_GetSetpointAtIdx(index + 1);
 
 	if (value2 == 0)
-		return (uint16_t) value1;
-	return (uint16_t) (value1 + ((value2 - value1) * rest) / 10);
+		return value1;
+	return (value1 + ((value2 - value1) * rest) / 10.0);
 }

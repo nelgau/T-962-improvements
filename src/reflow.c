@@ -271,10 +271,9 @@ static void control_heater_fan(float setpoint, bool force_heater_off)
 	log_reflow(false, hf);
 }
 
-// get this in seconds (no floats)
-static inline uint32_t seconds_since_start(void)
+static inline float seconds_since_start(void)
 {
-	return loops_since_activation * PID_CYCLE_MS / 1000;
+	return loops_since_activation * PID_CYCLE_MS / 1000.0;
 }
 
 /*!
@@ -288,7 +287,7 @@ static inline uint32_t seconds_since_start(void)
  */
 static int32_t Reflow_Work(void)
 {
-	uint16_t value, value_in10s;
+	float value, value_in10s;
 
 	// get temperature
 	Sensor_DoConversion();
@@ -302,11 +301,11 @@ static int32_t Reflow_Work(void)
 	case REFLOW_REFLOW:
 		// get setpoint from profile and look-ahead value
 		value = Reflow_GetSetpointAtTime(seconds_since_start());
-		value_in10s = Reflow_GetSetpointAtTime(seconds_since_start() + 10);
+		value_in10s = Reflow_GetSetpointAtTime(seconds_since_start() + 10.0);
 		// reported value is the current setpoint, steering might be different
-		reflow_info.setpoint = (float) value;
+		reflow_info.setpoint = value;
 
-		if (value && value_in10s) {
+		if (value > 0 && value_in10s > 0) {
 			// use look-ahead if heating (it works better)
 			if (value_in10s > value)
 				value = value_in10s;

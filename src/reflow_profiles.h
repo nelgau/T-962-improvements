@@ -26,7 +26,7 @@ int Reflow_SaveEEProfile(void);
 const char* Reflow_GetProfileName(int idx);
 void Reflow_SetProfileName(int idx, const char*);
 uint16_t Reflow_GetSetpointAtIdx(uint8_t idx);
-uint16_t Reflow_GetSetpointAtTime(uint32_t time);
+float Reflow_GetSetpointAtTime(float time);
 void Reflow_SetSetpointAtIdx(uint8_t idx, uint16_t value);
 
 #endif /* REFLOW_PROFILES_H */
