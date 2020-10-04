@@ -55,7 +55,7 @@
 
 #define STANDBYTEMP		60		// standby temperature in degree Celsius
 #define PID_CYCLE_MS	250		// PID cycle is 250ms
-#define PREHEAT_TIME  	120		// 2 * 60s
+#define PREHEAT_TIME  	300		// 5 * 60s
 
 static PidType PID;
 static ReflowState_t reflow_state = REFLOW_STANDBY;
