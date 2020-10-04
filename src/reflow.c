@@ -130,7 +130,7 @@ void Reflow_Abort(void)
 	}
 }
 
-static const char const *mode_string[] = {
+static const char *mode_string[] = {
 	[REFLOW_STANDBY] = "STANDBY",
 	[REFLOW_REFLOW] = "REFLOW",
 	[REFLOW_BAKE_PREHEAT] = "PREHEAT",
