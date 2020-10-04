@@ -88,7 +88,7 @@ int Reflow_ActivateBake(int setpoint, int time)
 
 	/* set or reset internal set */
 	if (reflow_state != REFLOW_BAKE_PREHEAT)
-		log(LOG_INFO, "Bake started setpoint: %3u, time: %ds", setpoint, time);
+		logx(LOG_INFO, "Bake started setpoint: %3u, time: %ds", setpoint, time);
 
 	loops_since_activation = 0;
 	reflow_info.setpoint = setpoint;
@@ -106,7 +106,7 @@ int Reflow_ActivateReflow(void)
 		return -1;
 
 	loops_since_activation = 0;
-	log(LOG_INFO, "Reflow started");
+	logx(LOG_INFO, "Reflow started");
 	reflow_state = REFLOW_REFLOW;
 	reflow_info.time_to_go = 0;
 	return 0;
@@ -123,7 +123,7 @@ void Reflow_Abort(void)
 	case REFLOW_BAKE_PREHEAT:
 	case REFLOW_BAKE:
 		reflow_state = REFLOW_COOLING;
-		log(LOG_INFO, "Reflow/Bake aborted");
+		logx(LOG_INFO, "Reflow/Bake aborted");
 		break;
 	default:
 		break;
@@ -185,7 +185,7 @@ static uint32_t constant_time_interval(void)
 	uint32_t tick_delta = this_tick - last_tick;
 	// tick_delta should be approximately one PID cycle, error if larger than 2!
 	if (tick_delta > 2 * TICKS_MS(PID_CYCLE_MS)) {
-		log(LOG_ERROR, "Reflow can't keep up with desired PID_CYCLE_MS!");
+		logx(LOG_ERROR, "Reflow can't keep up with desired PID_CYCLE_MS!");
 		return 0;
 	}
 
@@ -312,7 +312,7 @@ static int32_t Reflow_Work(void)
 				value = value_in10s;
 			control_heater_fan(value, false);
 		} else {
-			log(LOG_INFO, "Reflow done");
+			logx(LOG_INFO, "Reflow done");
 			// cooling takes much longer due to the capacity of the oven drawer
 			// this only has an impact if LR_WEIGHTED_AVERAGE is selected!
 			Sensor_TweakWhileCooling();
@@ -329,7 +329,7 @@ static int32_t Reflow_Work(void)
 		break;
 	case REFLOW_BAKE:
 		if (reflow_info.time_to_go < reflow_info.time_done) {
-			log(LOG_INFO, "Bake done");
+			logx(LOG_INFO, "Bake done");
 			// Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
 			Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(10));
 			reflow_state = REFLOW_COOLING;

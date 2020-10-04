@@ -40,9 +40,9 @@ int32_t SC18IS602B_Init( SPIclk_t clk, SPImode_t mode, SPIorder_t order ) {
 		}
 	}
 	if( retval == 0 ) {
-		log(LOG_INFO, "%s - Done (addr 0x%02x)", __FUNCTION__, scaddr>>1);
+		logx(LOG_INFO, "%s - Done (addr 0x%02x)", __FUNCTION__, scaddr>>1);
 	} else {
-		log(LOG_INFO, "%s - No chip found", __FUNCTION__);
+		logx(LOG_INFO, "%s - No chip found", __FUNCTION__);
 	}
 	return retval;
 }
@@ -50,7 +50,7 @@ int32_t SC18IS602B_Init( SPIclk_t clk, SPImode_t mode, SPIorder_t order ) {
 int32_t SC18IS602B_SPI_Xfer( SPIxfer_t* item ) {
 	int32_t retval;
 	if( item->len > (sizeof(SPIxfer_t) - 2) ) {
-		log(LOG_WARN, "%s: Invalid length!", __FUNCTION__);
+		logx(LOG_WARN, "%s: Invalid length!", __FUNCTION__);
 		return -1;
 	}
 	retval = I2C_Xfer(scaddr, (uint8_t*)item, item->len + 1, 1); // Initialize transfer, ssmask + data

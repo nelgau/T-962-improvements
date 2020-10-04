@@ -25,7 +25,7 @@ const char *log_level_name(int loglvl)
 }
 
 /* simply use printf for now */
-void log(int loglvl, const char* str, ...)
+void logx(int loglvl, const char* str, ...)
 {
     va_list arg;
 

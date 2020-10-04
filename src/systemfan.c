@@ -93,7 +93,7 @@ static int32_t SystemFanSense_Work(void) {
 }
 
 void SystemFan_Init(void) {
-	log(LOG_DEBUG, "%s", __FUNCTION__);
+	logx(LOG_DEBUG, "%s", __FUNCTION__);
 	Sched_SetWorkfunc(SYSFANPWM_WORK, SystemFanPWM_Work);
 	Sched_SetWorkfunc(SYSFANSENSE_WORK, SystemFanSense_Work);
 

@@ -330,9 +330,9 @@ static int32_t OneWire_Work(void) {
 }
 
 uint32_t OneWire_Init(void) {
-	log(LOG_DEBUG, "%s called", __FUNCTION__);
+	logx(LOG_DEBUG, "%s called", __FUNCTION__);
 	Sched_SetWorkfunc(ONEWIRE_WORK, OneWire_Work);
-	log(LOG_INFO, "Scanning 1-wire bus...");
+	logx(LOG_INFO, "Scanning 1-wire bus...");
 
 	tempidx = -1; // Assume we don't find a temperature sensor
 	for (unsigned i = 0; i < sizeof(tcidmapping); i++) {
@@ -369,7 +369,7 @@ uint32_t OneWire_Init(void) {
 				xferbyte(0x00);
 				xferbyte(0x1f); // Reduce resolution to 0.5C to keep conversion time reasonable
 				tempidx = iter; // Keep track of where we saw the last/only temperature sensor
-				log(LOG_INFO, "Found %08x%08x [%s Temperature sensor]",
+				logx(LOG_INFO, "Found %08x%08x [%s Temperature sensor]",
 						debug_id->higher, debug_id->lower,
 						sensorname);
 			} else if (family == OW_FAMILY_TC) {
@@ -381,13 +381,13 @@ uint32_t OneWire_Init(void) {
 				xferbyte(0xff);
 				uint8_t tcid = xferbyte(0xff) & 0x0f;
 				tcidmapping[tcid] = iter; // Keep track of the ID mapping
-				log(LOG_INFO, "Found %08x%08x [Thermocouple interface, ID 0x%x]",
+				logx(LOG_INFO, "Found %08x%08x [Thermocouple interface, ID 0x%x]",
 						debug_id->higher, debug_id->lower,
 						(unsigned int) tcid);
 			}
 		}
 	} else {
-		log(LOG_INFO, "No 1-wire devices found!");
+		logx(LOG_INFO, "No 1-wire devices found!");
 	}
 
 	if (numowdevices) {

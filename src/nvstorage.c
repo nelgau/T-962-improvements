@@ -57,7 +57,7 @@ void NV_Init(void) {
 	EEPROM_Read((uint8_t*) &myNV, 0, sizeof(myNV));
 
 	if (myNV.format_magic != NVMAGIC ) {
-		log(LOG_INFO, "wrong magic found, formatting EEPROM");
+		logx(LOG_INFO, "wrong magic found, formatting EEPROM");
 
 		// default values go here
 		myNV.format_magic = NVMAGIC;
@@ -148,7 +148,7 @@ int32_t NV_Work(void) {
 	if (nvupdatepending) count ++;
 	if (count == 4) {
 		nvupdatepending = count = 0;
-		log(LOG_VERBOSE, "Flushing NV configuration to EEProm");
+		logx(LOG_VERBOSE, "Flushing NV configuration to EEProm");
 		EEPROM_Write(offsetof(NV_t, config), myNV.config, NVITEM_NUM_ITEMS);
 	}
 	return nvupdatepending ? (int32_t) (TICKS_SECS(2)) : -1;

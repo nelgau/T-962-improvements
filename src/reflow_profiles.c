@@ -141,7 +141,7 @@ void Reflow_SetSetpointAtIdx(uint8_t idx, uint16_t value) {
 	if (idx < NUMPROFILETEMPS && value <= SETPOINT_MAX && Reflow_IdxIsInEEPROM(profileidx))
 		NV_SetSetpoint(profileidx - ARRAY_SIZE(rom_profiles), idx, value);
 	else
-		log(LOG_WARN, "Reflow_SetSetpoint fails: profileidx=%u, idx=%u, value=%u",
+		logx(LOG_WARN, "Reflow_SetSetpoint fails: profileidx=%u, idx=%u, value=%u",
 				profileidx, idx, value);
 }
 

@@ -44,7 +44,7 @@ static int32_t Buzzer_Work(void) {
 }
 
 void Buzzer_Init(void) {
-	log(LOG_DEBUG, "%s called", __FUNCTION__);
+	logx(LOG_DEBUG, "%s called", __FUNCTION__);
 
 	Sched_SetWorkfunc(BUZZER_WORK, Buzzer_Work);
 }

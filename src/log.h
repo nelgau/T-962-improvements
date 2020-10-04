@@ -10,7 +10,7 @@
 #define LOG_DEBUG	2		// Standard debug messages
 #define LOG_VERBOSE	3		// All debug messages
 
-void log(int loglvl, const char* str, ...) __attribute__((format (printf, 2, 3)));
+void logx(int loglvl, const char* str, ...) __attribute__((format (printf, 2, 3)));
 void set_log_level(int loglvl);
 
 #endif

@@ -146,10 +146,10 @@ uint8_t LCD_BMPDisplay(uint8_t* thebmp, uint8_t xoffset, uint8_t yoffset) {
 	}
 	bmhdr = &temp;
 
-	log(LOG_DEBUG, "%s: bfSize=%x biSize=%x", __FUNCTION__, (uint16_t)bmhdr->bfSize, (uint16_t)bmhdr->biSize);
-	log(LOG_DEBUG, "%s: Image size is %d x %d", __FUNCTION__, (int16_t)bmhdr->biWidth, (int16_t)bmhdr->biHeight);
+	logx(LOG_DEBUG, "%s: bfSize=%x biSize=%x", __FUNCTION__, (uint16_t)bmhdr->bfSize, (uint16_t)bmhdr->biSize);
+	logx(LOG_DEBUG, "%s: Image size is %d x %d", __FUNCTION__, (int16_t)bmhdr->biWidth, (int16_t)bmhdr->biHeight);
 	if (bmhdr->biPlanes != 1 || bmhdr->biBitCount != 1 || bmhdr->biCompression != 0) {
-		log(LOG_WARN, "%s: Incompatible bitmap format!", __FUNCTION__);
+		logx(LOG_WARN, "%s: Incompatible bitmap format!", __FUNCTION__);
 		return 1;
 	}
 	pixeloffset = bmhdr->bfOffBits;
@@ -161,7 +161,7 @@ uint8_t LCD_BMPDisplay(uint8_t* thebmp, uint8_t xoffset, uint8_t yoffset) {
 		upsidedown = 0;
 	}
 	if ((bmhdr->biWidth+xoffset > FB_WIDTH) || (bmhdr->biHeight+yoffset > FB_HEIGHT)) {
-		log(LOG_WARN, "%s: Image won't fit on display!", __FUNCTION__);
+		logx(LOG_WARN, "%s: Image won't fit on display!", __FUNCTION__);
 		return 1;
 	}
 
@@ -169,7 +169,7 @@ uint8_t LCD_BMPDisplay(uint8_t* thebmp, uint8_t xoffset, uint8_t yoffset) {
 	// If the image is 132 pixels wide then the pixel lines will be 20 bytes (160 pixels)
 	// 132&31 is 4 which means that there are 3 bytes of padding
 	numpadbytes = (4 - ((((bmhdr->biWidth) & 0x1f) + 7) >> 3)) & 0x03;
-	log(LOG_DEBUG, "%s: Skipping %d padding bytes after each line", __FUNCTION__, numpadbytes);
+	logx(LOG_DEBUG, "%s: Skipping %d padding bytes after each line", __FUNCTION__, numpadbytes);
 
 	for (int8_t y = bmhdr->biHeight - 1; y >= 0; y--) {
 		uint8_t realY = upsidedown ? (uint8_t)y : (uint8_t)(bmhdr->biHeight) - y;

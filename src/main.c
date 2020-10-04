@@ -131,7 +131,7 @@ int main(void) {
 	Set_Heater(0);
 	Set_Fan(0);
 	Serial_Init();
-	log(LOG_INFO, "Starting version: %s", Version_GetGitVersion());
+	logx(LOG_INFO, "Starting version: %s", Version_GetGitVersion());
 
 	I2C_Init();
 	EEPROM_Init();
@@ -144,7 +144,7 @@ int main(void) {
 
 	IO_Partinfo(buf, sizeof(buf), "%s rev %c");
 	LCD_printf(0, 58, 0, buf);
-	log(LOG_INFO, "Running on an %s", buf);
+	logx(LOG_INFO, "Running on an %s", buf);
 
 	LCD_printf(0, 0, CENTERED, Version_GetGitVersion());
 
@@ -345,7 +345,7 @@ static MainMode_t Reflow_Mode(MainMode_t mode) {
 
 	if (prolog) {
 		LCD_FB_Clear();
-		log(LOG_INFO, "Starting reflow with profile: %s", Reflow_GetProfileName(-1));
+		logx(LOG_INFO, "Starting reflow with profile: %s", Reflow_GetProfileName(-1));
 		plot_profile(-1);
 		LCD_BMPDisplay(stopbmp, 127 - 17, 0);
 		LCD_printf(13, 0, 0, Reflow_GetProfileName(-1));

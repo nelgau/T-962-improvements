@@ -71,7 +71,7 @@ static int32_t ADC_Work(void) {
 }
 
 void ADC_Init( void ) {
-	log(LOG_DEBUG, "%s called", __FUNCTION__);
+	logx(LOG_DEBUG, "%s called", __FUNCTION__);
 	Sched_SetWorkfunc(ADC_WORK, ADC_Work);
 
 	// 1MHz adc clock, enabling ch1 and 2
