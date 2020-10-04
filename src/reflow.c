@@ -198,13 +198,13 @@ static uint32_t constant_time_interval(void)
  *  get response from PID controller, calculate fan and heater value
  *  from the output, coerce fan values.
  */
-static heater_fan_t get_PID_response(uint16_t temperature, uint16_t setpoint)
+static heater_fan_t get_PID_response(float temperature, float setpoint)
 {
 	heater_fan_t hf = { 0, 0 };
 	uint8_t min_fan = NV_GetConfig(REFLOW_MIN_FAN_SPEED);
 
-	PID.mySetpoint = (float) setpoint;
-	PID.myInput = (float) temperature;
+	PID.mySetpoint = setpoint;
+	PID.myInput = temperature;
 	PID_Compute(&PID);
 	uint16_t out = (uint16_t) PID.myOutput;
 
