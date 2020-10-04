@@ -244,8 +244,8 @@ static void log_reflow(bool header, heater_fan_t hf)
 	if (reflow_log_level >= LOG_VERBOSE ||
 		(reflow_log_level >= LOG_INFO && reflow_state != REFLOW_STANDBY)) {
 		if (header)
-			printf("\n# Time,  Temp0, Temp1, Temp2, Temp3,  Set,Actual, Heat, Fan,  ColdJ, Mode");
-		printf("\n%6.1f,  %5.1f, %5.1f, %5.1f, %5.1f,  %5.1f, %5.1f,  %3u, %3u,  %5.1f, %s",
+			printf("# Time,  Temp0, Temp1, Temp2, Temp3,  Set,Actual, Heat, Fan,  ColdJ, Mode\n");
+		printf("%6.1f,  %5.1f, %5.1f, %5.1f, %5.1f,  %5.1f, %5.1f,  %3u, %3u,  %5.1f, %s\n",
 				(float) loops_since_activation * ((float) PID_CYCLE_MS / 1000.0),
 				Sensor_GetTemp(TC_LEFT), Sensor_GetTemp(TC_RIGHT),
 				Sensor_GetTemp(TC_EXTRA1), Sensor_GetTemp(TC_EXTRA2),
