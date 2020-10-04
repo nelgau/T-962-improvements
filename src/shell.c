@@ -198,6 +198,15 @@ static SCLI_CMD_RET cmd_set(uint8_t argc, char *argv[])
 		if (argc > 2)
 			value = atoi(argv[2]);
 		Reflow_SetLogLevel(value);
+
+
+	} else if (strcmp(argv[1], "reflow_min_fan_speed") == 0) {
+		value = 0;
+		if (argc > 2)
+			value = atoi(argv[2]);
+		NV_SetConfig(REFLOW_MIN_FAN_SPEED, value);
+
+
 	} else if (strcmp(argv[1], "profile") == 0) {
 		value = Reflow_GetProfileIdx();
 		// test if MAIN_HOME, but don't switch anywhere
