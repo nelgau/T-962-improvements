@@ -43,7 +43,9 @@ void Set_Secondary_Heater(uint8_t enable) {
 }
 #else
 // do nothing if not supported by the hardware
-void Set_Secondary_Heater(uint8_t enable) {}
+void Set_Secondary_Heater(uint8_t enable) {
+	UNUSED(enable);
+}
 #endif
 
 void Set_Fan(uint8_t enable) {
