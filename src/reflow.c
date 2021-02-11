@@ -55,7 +55,7 @@
 
 #define STANDBYTEMP		60		// standby temperature in degree Celsius
 #define PID_CYCLE_MS	250		// PID cycle is 250ms
-#define PREHEAT_TIME  	300		// 5 * 60s
+#define PREHEAT_TIME  	120		// 2 * 60s
 
 static PidType PID;
 static ReflowState_t reflow_state = REFLOW_STANDBY;
@@ -74,6 +74,11 @@ typedef struct {
 // consts
 static const heater_fan_t all_off = { 0, 0 };
 static const heater_fan_t cool_down = {0, 255};
+
+static void log_reflow_did_start(void);
+static void log_reflow_did_end(void);
+static void log_reflow_did_begin_phase(void);
+static void log_reflow_data(heater_fan_t hf);
 
 /*!
  * allow external world to enter bake mode
@@ -110,6 +115,10 @@ int Reflow_ActivateReflow(void)
 	logx(LOG_INFO, "Reflow started");
 	reflow_state = REFLOW_REFLOW_WARMUP;
 	reflow_info.time_to_go = 0;
+
+	log_reflow_did_start();
+	log_reflow_did_begin_phase();
+
 	return 0;
 }
 
@@ -127,6 +136,7 @@ void Reflow_Abort(void)
 	case REFLOW_BAKE:
 		reflow_state = REFLOW_COOLING;
 		logx(LOG_INFO, "Reflow/Bake aborted");
+		log_reflow_did_begin_phase();
 		break;
 	default:
 		break;
@@ -143,6 +153,18 @@ static const char *mode_string[] = {
 	[REFLOW_COOLING] = "COOLING"
 };
 
+static const char *phase_string[] = {
+	[REFLOW_REFLOW_WARMUP] = "WARMUP",
+	[REFLOW_REFLOW_PREHEAT] = "PREHEAT",
+	[REFLOW_REFLOW] = "PROFILE",
+	[REFLOW_COOLING] = "COOLING",
+
+	// Unused
+	[REFLOW_STANDBY] = "XXX",
+	[REFLOW_BAKE_PREHEAT] = "XXX",
+	[REFLOW_BAKE] = "XXX"
+};
+
 /*!
  * return a string (to be displayed or logged) that represents the
  * current mode
@@ -150,6 +172,11 @@ static const char *mode_string[] = {
 const char *Reflow_ModeString(void)
 {
 	return mode_string[reflow_state];
+}
+
+const char *Reflow_PhaseString(void)
+{
+	return phase_string[reflow_state];
 }
 
 bool Reflow_IsStandby(void)
@@ -240,28 +267,6 @@ static void set_heater_fan(heater_fan_t hf)
 	reflow_info.fan = hf.fan;
 }
 
-/*!
- * print a log if log level is high enough, if header is true add a header line
- * \todo implement json log output
- */
-static void log_reflow(bool header, heater_fan_t hf)
-{
-	if (reflow_log_level >= LOG_VERBOSE ||
-		(reflow_log_level >= LOG_INFO && reflow_state != REFLOW_STANDBY)) {
-		if (header)
-			printf("# Time,  Temp0, Temp1, Temp2, Temp3,  Set,Actual, Heat, Fan,  ColdJ, Mode\n");
-		printf("%6.1f,  %5.1f, %5.1f, %5.1f, %5.1f,  %5.1f, %5.1f,  %3u, %3u,  %5.1f, %s\n",
-				(float) loops_since_activation * ((float) PID_CYCLE_MS / 1000.0),
-				Sensor_GetTemp(TC_LEFT), Sensor_GetTemp(TC_RIGHT),
-				Sensor_GetTemp(TC_EXTRA1), Sensor_GetTemp(TC_EXTRA2),
-				reflow_info.setpoint, reflow_info.temperature,
-				hf.heater, hf.fan,
-				Sensor_GetTemp(TC_COLD_JUNCTION),
-				Reflow_ModeString());
-	}
-
-}
-
 /*
  * control the heater and fan using the PID, log without header
  *   .. it takes the temperature from the global information, but uses
@@ -273,12 +278,48 @@ static void control_heater_fan(float setpoint, bool force_heater_off)
 	if (force_heater_off)
 		hf.heater = 0;
 	set_heater_fan(hf);
-	log_reflow(false, hf);
+	log_reflow_data(hf);
 }
 
 static inline float seconds_since_start(void)
 {
 	return loops_since_activation * PID_CYCLE_MS / 1000.0;
+}
+
+/*!
+ * \todo implement json log output
+ */
+
+static void log_reflow_did_start(void)
+{
+	printf("\n");
+	printf("[REFLOW] START\n");
+}
+
+static void log_reflow_did_end(void)
+{
+	printf("[REFLOW] END\n");
+}
+
+static void log_reflow_did_begin_phase(void)
+{
+	printf("[REFLOW] BEGIN %s\n", Reflow_PhaseString());
+}
+
+static void log_reflow_data(heater_fan_t hf)
+{
+	printf("[REFLOW] LOG %s %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f %3u %3u\n",
+		Reflow_PhaseString(),
+		seconds_since_start(),
+		Sensor_GetTemp(TC_LEFT),
+		Sensor_GetTemp(TC_RIGHT),
+		Sensor_GetTemp(TC_EXTRA1),
+		Sensor_GetTemp(TC_EXTRA2),
+		Sensor_GetTemp(TC_COLD_JUNCTION),
+		reflow_info.setpoint,
+		reflow_info.temperature,
+		hf.heater,
+		hf.fan);
 }
 
 /*!
@@ -300,90 +341,97 @@ static int32_t Reflow_Work(void)
 	loops_since_activation++;
 
 	switch(reflow_state) {
-	case REFLOW_STANDBY:
-		log_reflow(false, all_off);
-		break;
+		case REFLOW_STANDBY:
+			break;
 
-	case REFLOW_REFLOW_WARMUP:
-		// Warm to the initial temperature of the profile
-		reflow_info.setpoint = Reflow_GetSetpointAtTime(0);
+		case REFLOW_REFLOW_WARMUP:
+			// Warm to the initial temperature of the profile
+			reflow_info.setpoint = Reflow_GetSetpointAtTime(0);
 
-		if (reflow_info.setpoint < reflow_info.temperature) {
-			logx(LOG_INFO, "Warmup done");
+			if (reflow_info.setpoint < reflow_info.temperature) {
+				logx(LOG_INFO, "Warmup done");
 
-			reflow_info.time_to_go = PREHEAT_TIME;
-			loops_since_activation = 0;
-			reflow_state = REFLOW_REFLOW_PREHEAT;
-		}
-		reflow_info.time_done = 0;
-		control_heater_fan(reflow_info.setpoint, false);
-		break;
+				reflow_info.time_to_go = PREHEAT_TIME;
+				loops_since_activation = 0;
+				reflow_state = REFLOW_REFLOW_PREHEAT;
 
-	case REFLOW_REFLOW_PREHEAT:
-		// Maintain the initial temperature
-		reflow_info.setpoint = Reflow_GetSetpointAtTime(0);
-
-		if (reflow_info.time_to_go < reflow_info.time_done) {
-			logx(LOG_INFO, "Preheat done");
-			reflow_info.time_to_go = 0;
+				log_reflow_did_begin_phase();
+			}
 			reflow_info.time_done = 0;
-			loops_since_activation = 0;
-			reflow_state = REFLOW_REFLOW;
-		}
-		control_heater_fan(reflow_info.setpoint, false);
-		break;
+			control_heater_fan(reflow_info.setpoint, false);
+			break;
 
-	case REFLOW_REFLOW:
-		// get setpoint from profile and look-ahead value
-		value = Reflow_GetSetpointAtTime(seconds_since_start());
-		value_in10s = Reflow_GetSetpointAtTime(seconds_since_start() + 10.0);
-		// reported value is the current setpoint, steering might be different
-		reflow_info.setpoint = value;
+		case REFLOW_REFLOW_PREHEAT:
+			// Maintain the initial temperature
+			reflow_info.setpoint = Reflow_GetSetpointAtTime(0);
 
-		if (value > 0 && value_in10s > 0) {
-			// use look-ahead if heating (it works better)
-			if (value_in10s > value)
-				value = value_in10s;
-			control_heater_fan(value, false);
-		} else {
-			logx(LOG_INFO, "Reflow done");
-			// cooling takes much longer due to the capacity of the oven drawer
-			// this only has an impact if LR_WEIGHTED_AVERAGE is selected!
-			Sensor_TweakWhileCooling();
-			reflow_state = REFLOW_COOLING;
-		}
-		break;
-	case REFLOW_BAKE_PREHEAT:
-		if (reflow_info.setpoint < reflow_info.temperature) {
-			loops_since_activation = 0;
-			reflow_state = REFLOW_BAKE;
-		}
-		reflow_info.time_done = 0;
-		control_heater_fan(reflow_info.setpoint, false);
-		break;
-	case REFLOW_BAKE:
-		if (reflow_info.time_to_go < reflow_info.time_done) {
-			logx(LOG_INFO, "Bake done");
-			// Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
-			Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(10));
-			reflow_state = REFLOW_COOLING;
-		}
-		control_heater_fan(reflow_info.setpoint, false);
-		break;
-	case REFLOW_COOLING:
-		// cool down to STANDBYTEMP, go full speed
-		reflow_info.setpoint = (float) STANDBYTEMP;
-		set_heater_fan(cool_down);
-		log_reflow(false, cool_down);
+			if (reflow_info.time_to_go < reflow_info.time_done) {
+				logx(LOG_INFO, "Preheat done");
+				reflow_info.time_to_go = 0;
+				reflow_info.time_done = 0;
+				loops_since_activation = 0;
+				reflow_state = REFLOW_REFLOW;
 
-		if (reflow_info.temperature < (float) STANDBYTEMP) {
-			// Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
-			Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(10));
-			set_heater_fan(all_off);
-			reflow_info.time_to_go = 0;
-			reflow_state = REFLOW_STANDBY;
-		}
-		break;
+				log_reflow_did_begin_phase();
+			}
+			control_heater_fan(reflow_info.setpoint, false);
+			break;
+
+		case REFLOW_REFLOW:
+			// get setpoint from profile and look-ahead value
+			value = Reflow_GetSetpointAtTime(seconds_since_start());
+			value_in10s = Reflow_GetSetpointAtTime(seconds_since_start() + 10.0);
+			// reported value is the current setpoint, steering might be different
+			reflow_info.setpoint = value;
+
+			if (value > 0 && value_in10s > 0) {
+				// use look-ahead if heating (it works better)
+				if (value_in10s > value)
+					value = value_in10s;
+				control_heater_fan(value, false);
+			} else {
+				logx(LOG_INFO, "Reflow done");
+				// cooling takes much longer due to the capacity of the oven drawer
+				// this only has an impact if LR_WEIGHTED_AVERAGE is selected!
+				Sensor_TweakWhileCooling();
+				reflow_state = REFLOW_COOLING;
+
+				log_reflow_did_begin_phase();
+			}
+			break;
+		case REFLOW_BAKE_PREHEAT:
+			if (reflow_info.setpoint < reflow_info.temperature) {
+				loops_since_activation = 0;
+				reflow_state = REFLOW_BAKE;
+			}
+			reflow_info.time_done = 0;
+			control_heater_fan(reflow_info.setpoint, false);
+			break;
+		case REFLOW_BAKE:
+			if (reflow_info.time_to_go < reflow_info.time_done) {
+				logx(LOG_INFO, "Bake done");
+				// Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
+				Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(10));
+				reflow_state = REFLOW_COOLING;
+			}
+			control_heater_fan(reflow_info.setpoint, false);
+			break;
+		case REFLOW_COOLING:
+			// cool down to STANDBYTEMP, go full speed
+			reflow_info.setpoint = (float) STANDBYTEMP;
+			set_heater_fan(cool_down);
+			log_reflow_data(cool_down);
+
+			if (reflow_info.temperature < (float) STANDBYTEMP) {
+				// Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(100) * NV_GetConfig(REFLOW_BEEP_DONE_LEN));
+				Buzzer_Beep(BUZZ_1KHZ, 255, TICKS_MS(10));
+				set_heater_fan(all_off);
+				reflow_info.time_to_go = 0;
+				reflow_state = REFLOW_STANDBY;
+
+				log_reflow_did_end();
+			}
+			break;
 	}
 
 	// do it here, since might have been reset above
